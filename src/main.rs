@@ -11,8 +11,9 @@ use polars::prelude::*;
 use std::collections::HashMap;
 use std::fs::File;
 use std::fs;
-use std::io::BufReader;
+use std::io::{BufReader, BufRead};
 use std::error::Error;
+use std::path::Path;
 use std::time::Instant;
 use std::io::Write;
 
@@ -69,13 +70,34 @@ fn main()-> Result<(), Box<dyn Error>> {
         id_map.insert(id, true);
     }
     let input_file_path = "input.csv";
-    let input_contents = fs::read_to_string(input_file_path)?;
-    let filtered_lines: Vec<&str> = input_contents.lines()
-        .filter(|line| !id_map.iter().any(|(_id, _data)| line.contains(_id)))
+
+    // Read input file in a more efficient way
+    let mut data_map: HashMap<String, String> = HashMap::new();
+    let file = File::open(Path::new(input_file_path))?;
+    let mut reader = BufReader::new(file);
+
+    // Assuming header row exists (adjust logic if needed)
+    let mut header_line = String::new();
+    reader.read_line(&mut header_line)?;
+
+    for line in reader.lines() {
+        let line = line?;
+        // Extract key (ID) and value (remaining data)
+        let mut fields = line.split(',');
+        let id = fields.next().unwrap_or("").to_string();
+        let remaining_data = fields.collect::<Vec<_>>().join(",");
+
+        data_map.insert(id, remaining_data);
+    }
+    let filtered_data: Vec<String> = data_map.into_iter()
+        .filter(|(id, _data)| !id_map.contains_key(id))
+        .map(|(id, data)| format!("{},{}", id, data))
         .collect();
     let new_file_path = "filtered_data.csv";
     let mut new_file = fs::File::create(new_file_path)?;
-    for line in filtered_lines {
+    let header = "id,uid,adjdate,adjtype,remitter,beneficiery,response,txndate,txntime,rrn,terminalid,ben_mobile_no,rem_mobile_no,chbdate,chbref,txnamount,adjamount,rem_payee_psp_fee,ben_fee,ben_fee_sw,adjfee,npcifee,remfeetax,benfeetax,npcitax,adjref,bankadjref,adjproof,compensation_amount,adjustment_raised_time,no_of_days_for_penalty,shdt73,shdt74,shdt75,shdt76,shdt77,transaction_type,transaction_indicator,beneficiary_account_number,remitter_account_number,aadhar_number,mobile_number,payer_psp,payee_psp,upi_transaction_id,virtual_address,dispute_flag,reason_code,mcc,originating_channel\n";
+    write!(new_file, "{}", header)?;
+    for line in filtered_data {
         write!(new_file, "{}\n", line)?;
     }
     let end2 = Instant::now();
