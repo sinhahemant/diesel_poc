@@ -100,9 +100,9 @@ fn main()-> Result<(), Box<dyn Error>> {
     for line in filtered_data {
         write!(new_file, "{}\n", line)?;
     }
-    let end2 = Instant::now();
-    let duration2 = end2.duration_since(start2);
-    println!("Created new file for bulk insert: {:?}", duration2);
+    let end3 = Instant::now();
+    let duration3 = end3.duration_since(start3);
+    println!("Created new file for bulk insert: {:?}", duration3);
 
 
     // Read input file for bulk insert
