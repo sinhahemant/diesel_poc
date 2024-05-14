@@ -63,7 +63,7 @@ fn main()-> Result<(), Box<dyn Error>> {
 
 
     // Filtering and creating new file
-    let start2 = Instant::now();
+    let start4 = Instant::now();
     // Load IDs into HashMap for efficient lookup
     let mut id_map: HashMap<String, bool> = HashMap::new();
     for id in ids {
@@ -100,32 +100,32 @@ fn main()-> Result<(), Box<dyn Error>> {
     for line in filtered_data {
         write!(new_file, "{}\n", line)?;
     }
-    let end3 = Instant::now();
-    let duration3 = end3.duration_since(start3);
-    println!("Created new file for bulk insert: {:?}", duration3);
+    let end4 = Instant::now();
+    let duration4 = end4.duration_since(start4);
+    println!("Created new file for bulk insert: {:?}", duration4);
 
 
     // Read input file for bulk insert
-    let start4 = Instant::now();
+    let start5 = Instant::now();
     let file_path = "filtered_data.csv";
     let new_models = read_csv_to_new_models(file_path)?;
     let batch_size = 1310;
     bulk_insert_your_models(&mut connection, new_models, batch_size);
-    let end4 = Instant::now();
+    let end5 = Instant::now();
 
-    let duration4 = end4.duration_since(start4);
+    let duration5 = end5.duration_since(start5);
 
-    println!("Bulk insert completed: {:?}", duration4);
+    println!("Bulk insert completed: {:?}", duration5);
     
     // Read input file for bulk update
-    let start5 = Instant::now();
+    let start6 = Instant::now();
     let update_file_path = "update.csv";
     let updated_models = read_csv_to_updated_models(update_file_path)?;
     bulk_update_your_models(&mut connection, updated_models);
-    let end5 = Instant::now();
-    let duration5 = end5.duration_since(start5);
+    let end6 = Instant::now();
+    let duration6 = end6.duration_since(start6);
 
-    println!("Bulk update completed: {:?}", duration5);
+    println!("Bulk update completed: {:?}", duration6);
 
     let end = Instant::now();
 
